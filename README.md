@@ -18,12 +18,13 @@ where
 - eeeeeeee - Event, can be one of 'history', 'div', or 'split'
 - cccccccc - Crumb
 
-The CSV file downloaded through the new API has a few format differences from the CSV file from the original iChart source.
+The CSV file downloaded through the new API has a few data and format differences from the CSV file from the original iChart source. If you plan to use the downloaded data with code that used to process the data from old API, please check your code to make sure that these differences are taken care of.
 
-1. The order of data fields in each row is slightly different. The fields of the new API are as following (note that the order of the last two fields are swapped from before).
+1. The historical data of Open, High, and Low are already **adjusted**. In older API download, these data fields are not adjusted.
+2. The order of data fields in each row is slightly different. The fields of the new API are as following (note that the order of the last two fields are swapped from before).
 ```
 Date, Open, High, Low, Close, Adjusted Close, Volume
 ```
 
-2. The order of the rows for historical quote by the new API is chronical (vs counter-chronical as the old API).
-3. The order of the rows for splits/dividents seems random and is not chronically ordered.
+2. The order of the rows for historical quote by the new API is **chronical** (vs counter-chronical as the old API).
+3. The order of the rows for splits/dividends seems random and is not chronically ordered.
