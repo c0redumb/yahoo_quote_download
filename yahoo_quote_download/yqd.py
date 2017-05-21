@@ -57,8 +57,8 @@ def _get_cookie_crumb():
 		_cookie = c.value
 
 	# Print the cookie and crumb
-	print('Cookie:', _cookie)
-	print('Crumb:', _crumb)
+	#print('Cookie:', _cookie)
+	#print('Crumb:', _crumb)
 
 def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 	'''
@@ -90,10 +90,8 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 
 	# Perform the query
 	# There is no need to enter the cookie here, as it is automatically handled by opener
-	try:
-		f = urllib.request.urlopen(url)
-		alines = f.readlines()
-		#print(alines)
-		return alines
-	except:
-		print('*** Error loading quote for {}'.format(ticker))
+	f = urllib.request.urlopen(url)
+	alines = f.readlines()
+	#print(alines)
+	return alines
+
