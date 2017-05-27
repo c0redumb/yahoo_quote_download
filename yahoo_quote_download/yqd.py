@@ -5,8 +5,8 @@ Created on Thu May 18 22:58:12 2017
 @author: c0redumb
 """
 
+import time
 import urllib.request, urllib.parse, urllib.error
-from datetime import datetime
 
 '''
 Starting on May 2017, Yahoo financial has terminated its service on
@@ -35,7 +35,7 @@ def _get_cookie_crumb():
 	# Perform a Yahoo financial lookup on SP500
 	url = 'https://finance.yahoo.com/quote/^GSPC'
 	f = urllib.request.urlopen(url)
-	alines = f.read().decode()
+	alines = f.read().decode('utf-8')
 
 	# Extract the crumb from the response
 	global _crumb
@@ -70,12 +70,12 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 		_get_cookie_crumb()
 
 	# Prepare the parameters and the URL
-	tb = datetime(int(begindate[0:4]), int(begindate[4:6]), int(begindate[6:8]), 0, 0)
-	te = datetime(int(enddate[0:4]), int(enddate[4:6]), int(enddate[6:8]), 0, 0)
+	tb = time.mktime((int(begindate[0:4]), int(begindate[4:6]), int(begindate[6:8]), 0, 0, 0, 0, 0, 0))
+	te = time.mktime((int(enddate[0:4]), int(enddate[4:6]), int(enddate[6:8]), 0, 0, 0, 0, 0, 0))
 
 	param = dict()
-	param['period1'] = int(tb.timestamp())
-	param['period2'] = int(te.timestamp())
+	param['period1'] = int(tb)
+	param['period2'] = int(te)
 	param['interval'] = '1d'
 	if info == 'quote':
 		param['events'] = 'history'
@@ -94,4 +94,3 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 	alines = f.readlines()
 	#print(alines)
 	return alines
-

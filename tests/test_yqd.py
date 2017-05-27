@@ -16,3 +16,6 @@ def load_quote(ticker):
 def test():
 	load_quote('QCOM')
 	load_quote('C')
+
+if __name__ == '__main__':
+	test()
