@@ -5,8 +5,16 @@ Created on Thu May 18 22:58:12 2017
 @author: c0redumb
 """
 
+# To make print working for Python2/3
+from __future__ import print_function
+
+# Use six to import urllib so it is working for Python2/3
+from six.moves import urllib
+# If you don't want to use six, please comment out the line above
+# and use the line below instead (for Python3 only).
+#import urllib.request, urllib.parse, urllib.error
+
 import time
-import urllib.request, urllib.parse, urllib.error
 
 '''
 Starting on May 2017, Yahoo financial has terminated its service on
@@ -91,6 +99,6 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 	# Perform the query
 	# There is no need to enter the cookie here, as it is automatically handled by opener
 	f = urllib.request.urlopen(url)
-	alines = f.readlines()
+	alines = f.read().decode('utf-8')
 	#print(alines)
-	return alines
+	return alines.split('\n')
