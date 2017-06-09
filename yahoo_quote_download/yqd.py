@@ -78,8 +78,8 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 		_get_cookie_crumb()
 
 	# Prepare the parameters and the URL
-	tb = time.mktime((int(begindate[0:4]), int(begindate[4:6]), int(begindate[6:8]), 0, 0, 0, 0, 0, 0))
-	te = time.mktime((int(enddate[0:4]), int(enddate[4:6]), int(enddate[6:8]), 0, 0, 0, 0, 0, 0))
+	tb = time.mktime((int(begindate[0:4]), int(begindate[4:6]), int(begindate[6:8]), 4, 0, 0, 0, 0, 0))
+	te = time.mktime((int(enddate[0:4]), int(enddate[4:6]), int(enddate[6:8]), 18, 0, 0, 0, 0, 0))
 
 	param = dict()
 	param['period1'] = int(tb)
