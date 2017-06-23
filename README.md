@@ -20,7 +20,7 @@ where
 
 The CSV file downloaded through the new API has a few data and format differences from the CSV file from the original iChart source. If you plan to use the downloaded data with code that used to process the data from old API, please check your code to make sure that these differences are taken care of.
 
-1. The historical data of Open, High, and Low are already **adjusted**. In older API download, these data fields are not adjusted. The adjustment of the historical data obtained through this new API did not take into account of dividend (while the adjustment through the old API did).
+1. The historical data of Open, High, and Low are already **adjusted**. In older API download, these data fields are not adjusted. Update 06/22/2017: The adjustment of the historical data obtained through this new API now take into account of both dividends and splits. But it is done incorrectly, so that the adjusted close price sometimes falls outside of the adjust high / low.
 2. The order of data fields in each row is slightly different. The fields of the new API are as following (note that the order of the last two fields are swapped from before).
 ```
 Date, Open, High, Low, Close, Adjusted Close, Volume
