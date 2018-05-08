@@ -15,6 +15,7 @@ from six.moves import urllib
 #import urllib.request, urllib.parse, urllib.error
 
 import time
+import pandas as pd
 
 '''
 Starting on May 2017, Yahoo financial has terminated its service on
@@ -73,7 +74,7 @@ def _get_cookie_crumb():
 	#print('Cookie:', _cookie)
 	#print('Crumb:', _crumb)
 
-def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
+def load_yahoo_quote(ticker, begindate, enddate, info = 'quote', format_output = 'list'):
 	'''
 	This function load the corresponding history/divident/split from Yahoo.
 	'''
@@ -107,4 +108,11 @@ def load_yahoo_quote(ticker, begindate, enddate, info = 'quote'):
 	f = urllib.request.urlopen(req)
 	alines = f.read().decode('utf-8')
 	#print(alines)
-	return alines.split('\n')
+	if format_output == 'list':
+		return alines.split('\n')
+
+	if format_output == 'dataframe':
+		nested_alines = [line.split(',') for line in alines[1:]]
+		cols = alines[0].split(',')
+		adf = pd.DataFrame.from_records(nested_alines, columns=cols)
+		return adf
