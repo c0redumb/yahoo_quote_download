@@ -1,16 +1,22 @@
 from setuptools import setup
 
+# Load version
+import yahoo_quote_download
+version = yahoo_quote_download.__version__
+#print("Version :", version)
+
+# Load README.md as long description
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='yahoo_quote_download',
-      version='0.2.1',
+      version=version,
       description='Yahoo Quote Downloader',
       author='c0redumb',
       url='https://github.com/c0redumb/yahoo_quote_download',
       long_description=long_description,
       long_description_content_type="text/markdown",
-          license="BSD 3-Clause License",
+          license="BSD 2-Clause License",
       packages=['yahoo_quote_download'],
       install_requires=[
           'six',

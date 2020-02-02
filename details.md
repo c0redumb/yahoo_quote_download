@@ -27,3 +27,4 @@ Date, Open, High, Low, Close, Adjusted Close, Volume
 3. The order of the rows for historical quote by the new API is **chronical** (vs counter-chronical as the old API).
 4. The order of the rows for splits/dividends seems random and is not chronically ordered.
 5. There are a number of holes (dates with prices marked as NULL), even in some of the SP500 stocks.
+6. When the last day is a weekend and only 1 or 2 days of date is downloaded, the data is wrong.

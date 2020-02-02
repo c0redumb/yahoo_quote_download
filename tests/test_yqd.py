@@ -18,13 +18,16 @@ def load_quote(ticker):
 def test_validate():
     print("Testing validator ...")
     data = ['Date,Open,High,Low,Close,Adj Close,Volume',
+            '2019-12-31,100.10,101.20,99.50,100.70,100.70,100000',
             '2020-01-01,100.10,101.20,99.50,100.70,100.70,100000',
             '2020-01-02,105.10,101.20,99.50,100.70,100.70,150000',
+            '2020-01-03,100.10,101.20,99.50,200.70,160.70,120000',
             '2020-01-03,100.10,101.20,99.50,200.70,160.70,120000',
             ''
             ]
     print("Original Data:", data)
-    print("Validated Data:", validater.validate('TEST', data))
+    print("Validated Data:", validater.validate(
+        'TEST', data, begindate='2020-01-01', verbose=99))
 
 
 def test():

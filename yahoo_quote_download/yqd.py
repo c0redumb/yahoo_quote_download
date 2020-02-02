@@ -45,15 +45,16 @@ def _get_cookie_crumb():
     '''
     This function perform a query and extract the matching cookie and crumb.
     '''
+    global cookier, _cookie, _crumb
 
     # Perform a Yahoo financial lookup on SP500
+    cookier.cookiejar.clear()
     req = urllib.request.Request(
         'https://finance.yahoo.com/quote/^GSPC', headers=_headers)
     f = urllib.request.urlopen(req)
     alines = f.read().decode('utf-8')
 
     # Extract the crumb from the response
-    global _crumb
     cs = alines.find('CrumbStore')
     cr = alines.find('crumb', cs + 10)
     cl = alines.find(':', cr + 5)
@@ -63,7 +64,6 @@ def _get_cookie_crumb():
     _crumb = crumb
 
     # Extract the cookie from cookiejar
-    global cookier, _cookie
     for c in cookier.cookiejar:
         if c.domain != '.yahoo.com':
             continue
