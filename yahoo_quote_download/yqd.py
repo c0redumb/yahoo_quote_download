@@ -37,7 +37,7 @@ _crumb = None
 
 # Headers to fake a user agent
 _headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; U; Linux i686) Gecko/20071127 Firefox/2.0.0.11'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36'
 }
 
 
@@ -51,7 +51,7 @@ def _get_cookie_crumb():
     cookier.cookiejar.clear()
     req = urllib.request.Request(
         'https://finance.yahoo.com/quote/^GSPC', headers=_headers)
-    f = urllib.request.urlopen(req)
+    f = urllib.request.urlopen(req, timeout=5)
     alines = f.read().decode('utf-8')
 
     # Extract the crumb from the response
@@ -113,7 +113,7 @@ def load_yahoo_quote(ticker, begindate, enddate, info='quote'):
 
     # Perform the query
     # There is no need to enter the cookie here, as it is automatically handled by opener
-    f = urllib.request.urlopen(req)
+    f = urllib.request.urlopen(req, timeout=5)
     alines = f.read().decode('utf-8')
     # print(alines)
     return alines.split('\n')
