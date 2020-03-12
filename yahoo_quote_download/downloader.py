@@ -30,6 +30,7 @@ def main():
                         help="The maximum number of retries")
     parser.add_argument("-v", "--verbose", dest="verbose", default=1, type=int,
                         help="Verbose level")
+    parser.add_argument("--version", action="version", version=__version__)
     args = parser.parse_args()
 
     if args.verbose > 0:
