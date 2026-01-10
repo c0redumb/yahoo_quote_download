@@ -15,6 +15,8 @@ from six.moves import urllib
 #import urllib.request, urllib.parse, urllib.error
 
 import time
+import gzip
+import io
 
 '''
 Starting on May 2017, Yahoo financial has terminated its service on
@@ -27,7 +29,9 @@ This code is provided to obtain such matching cookie and crumb.
 '''
 
 # Build the cookie handler
-cookier = urllib.request.HTTPCookieProcessor()
+import http.cookiejar
+cj = http.cookiejar.CookieJar()
+cookier = urllib.request.HTTPCookieProcessor(cj)
 opener = urllib.request.build_opener(cookier)
 urllib.request.install_opener(opener)
 
@@ -37,57 +41,29 @@ _crumb = None
 
 # Headers to fake a user agent
 _headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.101 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
 
 
+import json
+from datetime import datetime
+
 def _get_cookie_crumb():
     '''
-    This function perform a query and extract the matching cookie and crumb.
+    This function is now a placeholder as the v8 API currently does not require crumbs.
     '''
-    global cookier, _cookie, _crumb
-
-    # Perform a Yahoo financial lookup on SP500
-    cookier.cookiejar.clear()
-    req = urllib.request.Request(
-        'https://finance.yahoo.com/quote/^GSPC', headers=_headers)
-    f = urllib.request.urlopen(req, timeout=5)
-    alines = f.read().decode('utf-8')
-
-    # Extract the crumb from the response
-    cs = alines.find('CrumbStore')
-    cr = alines.find('crumb', cs + 10)
-    cl = alines.find(':', cr + 5)
-    q1 = alines.find('"', cl + 1)
-    q2 = alines.find('"', q1 + 1)
-    crumb = alines[q1 + 1:q2]
-    _crumb = crumb
-
-    # Extract the cookie from cookiejar
-    for c in cookier.cookiejar:
-        if c.domain != '.yahoo.com':
-            continue
-        if c.name != 'B':
-            continue
-        _cookie = c.value
-
-    # Print the cookie and crumb
-    #print('Cookie:', _cookie)
-    #print('Crumb:', _crumb)
+    global _cookie, _crumb
+    _cookie = 'ready'
+    _crumb = 'not_needed'
 
 
 def load_yahoo_quote(ticker, begindate, enddate, info='quote'):
     '''
-    This function load the corresponding history/divident/split from Yahoo.
+    This function load the corresponding history/divident/split from Yahoo using v8 API.
     The "begindate" and "enddate" are in the format of YYYYMMDD.
-    The "info" can be "quote" for price, "divident" for divident events,
+    The "info" can be "quote" for price, "dividend" for dividend events,
     or "split" for split events.
     '''
-    # Check to make sure that the cookie and crumb has been loaded
-    global _cookie, _crumb
-    if _cookie == None or _crumb == None:
-        _get_cookie_crumb()
-
     # Prepare the parameters and the URL
     tb = time.mktime((int(begindate[0:4]), int(
         begindate[4:6]), int(begindate[6:8]), 4, 0, 0, 0, 0, 0))
@@ -98,22 +74,67 @@ def load_yahoo_quote(ticker, begindate, enddate, info='quote'):
     param['period1'] = int(tb)
     param['period2'] = int(te)
     param['interval'] = '1d'
-    if info == 'quote':
-        param['events'] = 'history'
-    elif info == 'dividend':
-        param['events'] = 'div'
-    elif info == 'split':
-        param['events'] = 'split'
-    param['crumb'] = _crumb
+    param['includeAdjustedClose'] = 'true'
+    
+    # Always get all events to be sure
+    param['events'] = 'div|split'
+    
     params = urllib.parse.urlencode(param)
-    url = 'https://query1.finance.yahoo.com/v7/finance/download/{}?{}'.format(
+    url = 'https://query1.finance.yahoo.com/v8/finance/chart/{}?{}'.format(
         ticker, params)
-    # print(url)
+    
     req = urllib.request.Request(url, headers=_headers)
 
     # Perform the query
-    # There is no need to enter the cookie here, as it is automatically handled by opener
-    f = urllib.request.urlopen(req, timeout=5)
-    alines = f.read().decode('utf-8')
-    # print(alines)
-    return alines.split('\n')
+    try:
+        f = urllib.request.urlopen(req, timeout=10)
+        data = f.read()
+        if f.info().get('Content-Encoding') == 'gzip' or data.startswith(b'\x1f\x8b'):
+            data = gzip.decompress(data)
+        out = json.loads(data.decode('utf-8'))
+    except Exception as e:
+        # print("Error fetching data:", e)
+        return []
+
+    # Parse JSON and format as CSV-like list of strings
+    res = out.get('chart', {}).get('result', [])
+    if not res:
+        return []
+    
+    result = res[0]
+    timestamps = result.get('timestamp', [])
+    indicators = result.get('indicators', {})
+    quote = indicators.get('quote', [{}])[0]
+    adjclose = indicators.get('adjclose', [{}])[0].get('adjclose', [])
+    events = result.get('events', {})
+
+    lines = []
+    if info == 'quote':
+        lines.append('Date,Open,High,Low,Close,Adj Close,Volume')
+        for i in range(len(timestamps)):
+            dt = datetime.fromtimestamp(timestamps[i]).strftime('%Y-%m-%d')
+            line = '{},{},{},{},{},{},{}'.format(
+                dt,
+                quote.get('open', [None]*len(timestamps))[i],
+                quote.get('high', [None]*len(timestamps))[i],
+                quote.get('low', [None]*len(timestamps))[i],
+                quote.get('close', [None]*len(timestamps))[i],
+                adjclose[i] if i < len(adjclose) else '',
+                quote.get('volume', [None]*len(timestamps))[i]
+            )
+            lines.append(line)
+    elif info == 'dividend':
+        lines.append('Date,Dividends')
+        divs = events.get('dividends', {})
+        # Sort dividends by date
+        for ts in sorted(divs.keys()):
+            dt = datetime.fromtimestamp(int(ts)).strftime('%Y-%m-%d')
+            lines.append('{},{}'.format(dt, divs[ts].get('amount')))
+    elif info == 'split':
+        lines.append('Date,Stock Splits')
+        splits = events.get('splits', {})
+        for ts in sorted(splits.keys()):
+            dt = datetime.fromtimestamp(int(ts)).strftime('%Y-%m-%d')
+            lines.append('{},{}'.format(dt, splits[ts].get('splitRatio')))
+    
+    return lines
